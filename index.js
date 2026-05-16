@@ -27,13 +27,25 @@ app.get('/play', async (req, res) => {
         const videoId = req.query.id;
         if (!videoId) return res.status(400).json({ error: "ID eksik" });
         
-        const d1 = "you";
-        const d2 = "tube";
-        const URL_TEMEL = "https://www." + d1 + d2 + ".com/watch?v=";
-        const gercekUrl = URL_TEMEL + videoId;
+        const url = "https://www.youtube.com/watch?v=" + videoId;
         
-        const info = await ytdl.getInfo(gercekUrl, {
-            requestOptions: {
+        const info = await ytdl.getInfo(url);
+        const format = ytdl.chooseFormat(info.formats, { filter: 'audioonly', quality: 'highestaudio' });
+        
+        if (format && format.url) {
+            res.json({ url: format.url, title: info.videoDetails.title });
+        } else {
+            res.status(500).json({ error: "Ses formatı bulunamadı" });
+        }
+    } catch (e) {
+        res.status(500).json({ error: "Ses çözme hatası: " + e.message });
+    }
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, '0.0.0.0', () => {
+    console.log("Sunucu aktif port: " + PORT);
+});
                 headers: {
                     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
                 }
