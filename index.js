@@ -3,6 +3,12 @@ const app = express();
 const search = require('yt-search');
 const ytdl = require('ytdl-core');
 
+// index.js dosyasının en başına bunları ekle
+app.use((req, res, next) => {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    next();
+});
 // Sketchware'den gelen arama isteğini işler
 app.get('/search', async (req, res) => {
     try {
