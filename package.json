@@ -1,5 +1,5 @@
 {
-  "name": "muzic-server",
+  "name": "muzik",
   "version": "1.0.0",
   "description": "Müzik uygulaması için YouTube API sunucusu",
   "main": "index.js",
