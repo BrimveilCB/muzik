@@ -22,16 +22,15 @@ app.get('/search', async (req, res) => {
     }
 });
 
-// Çalma Endpoint'i (Hatalar düzeltildi)
+// Çalma Endpoint'i
 app.get('/play', async (req, res) => {
-    const videoId = req.query.id;
-    if (!videoId) return res.status(400).send("ID eksik");
-    
-    // Doğru YouTube URL formatı
-    const url = `https://www.youtube.com/watch?v=${videoId}`;
-    
     try {
-        // YouTube kısıtlamalarını aşmak için ajan (user-agent) taklidi yapıyoruz
+        const videoId = req.query.id;
+        if (!videoId) return res.status(400).send("ID eksik");
+        
+        // Hatalı tırnak ve harf dizilimi tamamen düzeltildi
+        const url = "https://www.youtube.com/watch?v=" + videoId;
+        
         const info = await ytdl.getInfo(url, {
             requestOptions: {
                 headers: {
@@ -40,40 +39,20 @@ app.get('/play', async (req, res) => {
             }
         });
         
-        // Sadece ses olan en yüksek kaliteli formatı seç
         const format = ytdl.chooseFormat(info.formats, { filter: 'audioonly', quality: 'highestaudio' });
         
         if (format && format.url) {
             res.json({ url: format.url, title: info.videoDetails.title });
         } else {
-            throw new Error("Uygun ses formatı bulunamadı");
+            res.status(500).json({ error: "Uygun ses formatı bulunamadı" });
         }
     } catch (e) {
         res.status(500).send("Ses çözme hatası: " + e.message);
     }
 });
 
+// Port Ayarı
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Sunucu ${PORT} portunda aktif.`);
+    console.log("Sunucu aktif port: " + PORT);
 });
-        res.json({ url: format.url, title: info.videoDetails.title });
-    } catch (e) {
-        res.status(500).send("Ses çözme hatası: " + e.message);
-    }
-});
-
-// Render sunucusunun dış dünyaya açılmasını sağlayan port ayarı
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Sunucu ${PORT} portunda sorunsuz çalışıyor.`);
-});
-});
-
-// Render sunucusunun dış dünyaya açılmasını sağlayan port ayarı
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Sunucu ${PORT} portunda sorunsuz çalışıyor.`);
-});
-
-app.listen(process.env.PORT || 3000);
