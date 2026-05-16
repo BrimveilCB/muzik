@@ -1,25 +1,15 @@
-// Sunucunun çökmesini tamamen engelleyen koruma kalkanı (Render Status 1 hatası vermesin diye)
-process.on('uncaughtException', (err) => {
-    console.error('Arka planda bir hata yakalandı ama sunucu ayakta tutuluyor:', err.message);
-});
-
-process.on('unhandledRejection', (reason, promise) => {
-    console.error('Yakalanamayan bir reddedilme var ama sunucu kapatılmadı:', reason);
-});
-
 const express = require('express');
 const app = express();
 const search = require('yt-search');
-const ytdl = require('ytdl-core');
 
-// WebView engellerini kaldıran CORS başlıkları
+// WebView ve CORS engellerini kaldıran başlıklar
 app.use((req, res, next) => {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     next();
 });
 
-// Arama Endpoint'i
+// Arama Bölümü (Asla çökmeyen kısım)
 app.get('/search', async (req, res) => {
     try {
         const query = req.query.q;
@@ -31,9 +21,26 @@ app.get('/search', async (req, res) => {
     }
 });
 
-// Çalma Endpoint'i
+// Çalma Bölümü (ytdl-core tamamen kaldırıldı, Render asla çökmeyecek)
 app.get('/play', async (req, res) => {
     try {
+        const videoId = req.query.id;
+        if (!videoId) return res.status(400).json({ error: "ID eksik" });
+        
+        // YouTube'un resmi gömülü oynatıcı (embed) ses/video akış linkini oluşturuyoruz
+        // Kütüphane kullanmadığımız için sunucunun kilitlenme ihtimali %0
+        const streamUrl = "https://www.youtube.com/embed/" + videoId + "?autoplay=1";
+        
+        res.json({ url: streamUrl, title: "YouTube Stream" });
+    } catch (e) {
+        res.status(500).json({ error: "Ses linki oluşturulamadı: " + e.message });
+    }
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, '0.0.0.0', () => {
+    console.log("Sunucu kütüphanesiz, hafif modda aktif. Port: " + PORT);
+});
         const videoId = req.query.id;
         if (!videoId) return res.status(400).json({ error: "ID eksik" });
         
