@@ -1,7 +1,6 @@
 {
-  "name": "muzik",
+  "name": "muzik-server",
   "version": "1.0.0",
-  "description": "Müzik uygulaması",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
@@ -11,3 +10,4 @@
     "yt-search": "^2.10.4"
   }
 }
+
