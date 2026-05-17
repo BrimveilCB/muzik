@@ -1,39 +1,39 @@
-const express = require('express');
-const app = express();
-const search = require('yt-search');
+var express = require('express');
+var app = express();
+var search = require('yt-search');
 
-// WebView ve CORS engellerini kaldıran başlıklar
-app.use((req, res, next) => {
+app.use(function(req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     next();
 });
 
-// Arama Bölümü (Asla çökmeyen kısım)
-app.get('/search', async (req, res) => {
-    try {
-        const query = req.query.q;
-        if (!query) return res.status(400).json({ error: "Arama sorgusu eksik" });
-        const results = await search(query);
-        res.json(results.videos.slice(0, 10));
-    } catch (e) {
-        res.status(500).json({ error: "Arama hatası: " + e.message });
-    }
+// En basit arama testi
+app.get('/search', function(req, res) {
+    var query = req.query.q;
+    if (!query) return res.status(400).json({ error: "Sorgu yok" });
+
+    search(query)
+        .then(function(results) {
+            res.json(results.videos.slice(0, 10));
+        })
+        .catch(function(err) {
+            res.status(500).json({ error: err.message });
+        });
 });
 
-// Çalma Bölümü (ytdl-core tamamen kaldırıldı, Render asla çökmeyecek)
-app.get('/play', async (req, res) => {
-    try {
-        const videoId = req.query.id;
-        if (!videoId) return res.status(400).json({ error: "ID eksik" });
-        
-        // YouTube'un resmi gömülü oynatıcı (embed) ses/video akış linkini oluşturuyoruz
-        // Kütüphane kullanmadığımız için sunucunun kilitlenme ihtimali %0
-        const streamUrl = "https://www.youtube.com/embed/" + videoId + "?autoplay=1";
-        
-        res.json({ url: streamUrl, title: "YouTube Stream" });
-    } catch (e) {
-        res.status(500).json({ error: "Ses linki oluşturulamadı: " + e.message });
+// Boş çalma endpointi (Çökmeyi önlemek için içi bomboş düz metin)
+app.get('/play', function(req, res) {
+    var videoId = req.query.id;
+    if (!videoId) return res.status(400).json({ error: "ID yok" });
+    
+    res.json({ url: "https://www.youtube.com/embed/" + videoId, title: "Stream" });
+});
+
+var PORT = process.env.PORT || 3000;
+app.listen(PORT, '0.0.0.0', function() {
+    console.log("Sunucu ayakta.");
+});
     }
 });
 
