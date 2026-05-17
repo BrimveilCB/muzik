@@ -8,12 +8,7 @@ app.use((req, res, next) => {
     next();
 });
 
-// Temel test endpoint'i (Sunucu açıldı mı diye bakmak için)
-app.get('/', (req, res) => {
-    res.send("Sunucu canavar gibi ayakta!");
-});
-
-// Arama Endpoint'i
+// Arama Kısmı
 app.get('/search', async (req, res) => {
     try {
         const query = req.query.q;
@@ -25,21 +20,27 @@ app.get('/search', async (req, res) => {
     }
 });
 
-// Çalma Endpoint'i (ytdl-core tamamen kaldırıldı, düz embed linki dönüyor)
-app.get('/play', (req, res) => {
+// Gerçek MP3 / MP4 Linki Çözen Kısım
+app.get('/play', async (req, res) => {
     try {
         const videoId = req.query.id;
         if (!videoId) return res.status(400).json({ error: "ID eksik" });
+
+        // Engellere takılmayan harici indirme/stream API'si
+        const apiUrl = `https://api.vevioz.com/api/button/mp3/${videoId}`;
         
-        const streamUrl = "https://www.youtube.com/embed/" + videoId;
-        res.json({ url: streamUrl, title: "YouTube Stream" });
+        // HTML doğrudan bu linke gidebilsin veya indirebilsin diye adresi paslıyoruz
+        res.json({ 
+            url: apiUrl, 
+            mp4: `https://api.vevioz.com/api/button/videos/${videoId}`,
+            title: "Uzantı Hazır" 
+        });
     } catch (e) {
-        res.status(500).json({ error: "Hata: " + e.message });
+        res.status(500).json({ error: "Çözme hatası: " + e.message });
     }
 });
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => {
-    console.log("Sunucu hatasız sekilde aktif edildi. Port: " + PORT);
+    console.log("Müzik indirme ve dinleme sunucusu aktif port: " + PORT);
 });
-
